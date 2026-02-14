@@ -1,0 +1,115 @@
+import re
+import json
+
+from telegram import Message, CallbackQuery
+from utils import get_text_or_caption, strip_quotes, parse_str
+
+
+class Command:
+    """
+    This object represents a bot command.
+    Takes care of basic command functionality, such as parsing and logging.
+    """
+
+    def __init__(self, message: Message):
+        self.message_obj = message
+        parsed = self._parse()
+        self.command = parsed["command"]
+        self.target = parsed["target"]
+        self.opts = self._parse_opts(parsed["opts"])
+        self.arg = parsed["arg"]
+
+    def _parse(self):
+        """
+        Parses a command message and returns a dictionary with the command,
+        options and argument (text).
+        """
+        match = re.match(
+            r"^(?P<command>\/\w+)(?:@(?P<target>\w*))?(?:\((?P<opts>.*?)\))?(?: (?P<arg>.*))?$",
+            get_text_or_caption(self.message_obj),
+            re.DOTALL,
+        )
+        if match:
+            return match.groupdict()
+        else:
+            raise ValueError("Invalid command format.")
+
+    def _parse_opts(self, opts):
+        """
+        Parses the options string and returns a dictionary.
+        """
+        if not opts:
+            return {}
+        # Regex to split by commas and equals, but not within quotes
+        commas_regex = r'(?!\B"[^"]*),(?![^"]*"\B)'
+        equals_regex = r'(?!\B"[^"]*)=(?![^"]*"\B)'
+
+        # Split by comma to get options
+        opts_split = re.split(commas_regex, opts)
+
+        # Split by equals to get key-value pairs
+        opts_pairs = []
+        for o in [re.split(equals_regex, opt) for opt in opts_split]:
+            if len(o) != 2:
+                # If there is no value, assume it's a boolean flag
+                o = (o[0], str(True))
+            key = strip_quotes(o[0].strip())
+            value = parse_str(strip_quotes(o[1].strip()))
+            opts_pairs.append((key, value))
+        opts_dict = dict(opts_pairs)
+        return opts_dict
+
+    def get_reply_or_arg(self) -> str:
+        """
+        Returns the text of the message replied to OR the argument of the command.
+        (Preference towards replies)
+        """
+        if self.message_obj.reply_to_message:
+            return get_text_or_caption(self.message_obj.reply_to_message)
+        return self.arg
+
+    def get_arg_or_reply(self) -> str:
+        """
+        Returns the argument of the command OR the text of the message replied to.
+        (Preference towards arguments)
+        """
+        if self.arg:
+            return self.arg
+        return get_text_or_caption(self.message_obj.reply_to_message)
+
+    def get_arg_and_reply(self) -> tuple[str, str]:
+        """
+        Returns the argument of a command AND the text of the message replied to.
+        """
+        if self.message_obj.reply_to_message:
+            return self.arg, get_text_or_caption(self.message_obj.reply_to_message)
+        return self.arg, ""
+
+    def use_default_opt(self, default_key: str):
+        """
+        If only a single flag option is provided, assume it's the default key.
+
+        e.g. /command(Hello guys!) -> /command([default_key]=Hello guys!)
+        """
+        if len(self.opts.values()) == 1 and list(self.opts.values())[0] is True:
+            self.opts = {default_key: list(self.opts.keys())[0]}
+
+
+class CallbackQueryCommand(Command):
+    """
+    Fake Command object to parse CallbackQuery objects.
+    """
+
+    def __init__(self, query: CallbackQuery):
+        super().__init__(query.message)
+
+    def _parse(self):
+        opts = re.search(r"OPTS: (\{.*\})", self.message_obj.text)
+        opts = opts.group(1) if opts else None
+        return {"command": None, "target": None, "opts": opts, "arg": None}
+
+    def _parse_opts(self, opts):
+        return json.loads(opts) if opts else {}
+
+    def get_reply_or_arg(self) -> str:
+        pass

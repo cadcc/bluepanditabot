@@ -1,0 +1,12 @@
+__pycache__/
+
+# Virtual Environment
+venv/
+.venv/
+
+# Telegram bot
+/config/auth.py
+db
+
+# Logs
+/log/

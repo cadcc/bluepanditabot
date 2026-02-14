@@ -1,0 +1,16 @@
+[tool.black]
+line - length = 88        # Default line length, adjust if necessary
+skip - string - normalization = false   # Use double quotes
+target - version = ["py39"]  # Specify the Python version
+
+[tool.isort]
+profile = "black"        # Ensures isort styles match Black's formatting
+line_length = 88         # Consistency with Black
+multi_line_output = 3    # Use vertical hanging indent style
+include_trailing_comma = true  # Ensures trailing commas in imports
+
+[tool.autopep8]
+aggressive = true            # Enable aggressive formatting
+max_line_length = 88         # Consistent line length with Black
+ignore = ["E111", "E114"]   # Ignore specific indentation errors
+indent_size = 2              # Set indentation to 2 spaces
