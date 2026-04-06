@@ -203,7 +203,7 @@ def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
     if arg not in tag_groups:
         response = "\U0001F44D No existe el grupo" + arg + "!!1!"
     else:
-        response = tag_title + arg + "!!!\n" + "\n".join(list(tag_groups[arg]))
+        response = tag_title + arg + "!!!\n" + " ".join(list(tag_groups[arg]))
     try_msg(context.bot,
             chat_id=update.message.chat_id,
             parse_mode="HTML",
