@@ -9,11 +9,10 @@ from data import persistence
 from commands.decorators import command
 from commands.base import Command
 from config.logger import log_command
-from utils import try_msg, guard_editable_bot_message, try_edit
+from utils import try_msg, guard_editable_bot_message, try_edit, try_delete
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 tag_title = "\U0001F4A1 ATENCIÓN "
-
 
 @command(member_exclusive=True)
 def new_group(update: Update, context: CallbackContext, cmd: Command) -> None:
@@ -113,7 +112,13 @@ def stag(update: Update, context: CallbackContext) -> None:
     arg = query.data.split(":")[1]
 
     response = tag_title + arg + "!!!\n" + "\n".join(list(tag_groups[arg]))
-    query.edit_message_text(text=response, parse_mode="HTML")
+    original_message = query.message.reply_to_message
+    try_delete(context.bot, chat_id=query.message.chat_id, message_id=query.message.message_id)
+    try_msg(context.bot,
+            chat_id=query.message.chat_id,
+            parse_mode="HTML",
+            text=response,
+            reply_to_message_id=original_message.message_id if original_message else None)
     return
 
 
@@ -202,7 +207,8 @@ def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
     try_msg(context.bot,
             chat_id=update.message.chat_id,
             parse_mode="HTML",
-            text=response)
+            text=response,
+            reply_to_message_id=update.message.message_id)
 
 
 @command(member_exclusive=True)
