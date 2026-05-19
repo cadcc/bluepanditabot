@@ -111,7 +111,7 @@ def stag(update: Update, context: CallbackContext) -> None:
     query.answer()
     arg = query.data.split(":")[1]
 
-    response = tag_title + arg + "!!!\n" + "\n".join(list(tag_groups[arg]))
+    response = tag_title + arg + "!!!\n" + " ".join(list(tag_groups[arg]))
     original_message = query.message.reply_to_message
     try_delete(context.bot, chat_id=query.message.chat_id, message_id=query.message.message_id)
     try_msg(context.bot,
