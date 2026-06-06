@@ -19,16 +19,16 @@ def member_exclusive(func: Callable):
     """
 
     @functools.wraps(func)
-    def member_check(update: Update, context: CallbackContext, *args) -> None:
+    async def member_check(update: Update, context: CallbackContext, *args) -> None:
         if debug:
-            func(update, context, *args)
+            await func(update, context, *args)
             return
 
-        chat_member = context.bot.getChatMember(
+        chat_member = await context.bot.get_chat_member(
             group_id, update.message.from_user.id)
 
         if chat_member.status not in ["administrator", "creator", "member"]:
-            try_msg(
+            await try_msg(
                 context.bot,
                 chat_id=update.message.chat_id,
                 parse_mode="HTML",
@@ -42,7 +42,7 @@ def member_exclusive(func: Callable):
             )
             return
 
-        func(update, context, *args)
+        await func(update, context, *args)
         return
 
     return member_check
@@ -56,13 +56,13 @@ def group_exclusive(func: Callable):
     """
 
     @functools.wraps(func)
-    def group_check(update: Update, context: CallbackContext, *args) -> None:
+    async def group_check(update: Update, context: CallbackContext, *args) -> None:
         if debug:
-            func(update, context, *args)
+            await func(update, context, *args)
             return
 
         if update.message.chat_id != group_id:
-            try_msg(
+            await try_msg(
                 context.bot,
                 chat_id=update.message.chat_id,
                 parse_mode="HTML",
@@ -76,7 +76,7 @@ def group_exclusive(func: Callable):
             )
             return
 
-        func(update, context, *args)
+        await func(update, context, *args)
         return
 
     return group_check
@@ -92,19 +92,19 @@ def command(member_exclusive: bool = False, group_exclusive: bool = False):
 
     def decorator(func: Callable):
         @functools.wraps(func)
-        def wrapper(update: Update, context: CallbackContext, *args) -> None:
-            command = Command(update.message)
+        async def wrapper(update: Update, context: CallbackContext, *args) -> None:
+            cmd = Command(update.message)
             log_command(update)
             try:
                 params = inspect.signature(func).parameters
                 arg_annotations = map(
                     lambda arg: arg.annotation, params.values())
                 if Command in arg_annotations and len(params) >= 3:
-                    func(update, context, command, *args)
+                    await func(update, context, cmd, *args)
                 else:
-                    func(update, context, *args)
+                    await func(update, context, *args)
             except Exception as e:
-                try_msg(
+                await try_msg(
                     context.bot,
                     chat_id=update.message.chat_id,
                     parse_mode="HTML",

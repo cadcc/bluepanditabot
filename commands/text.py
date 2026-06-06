@@ -8,7 +8,7 @@ from utils import try_msg
 
 
 @command(member_exclusive=True)
-def slashear(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def slashear(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Converts a phrase into a slash-ized version
     """
@@ -19,7 +19,7 @@ def slashear(update: Update, context: CallbackContext, cmd: Command) -> None:
     response = "/" + words[0].lower()
     for word in words[1:]:
         response += word.capitalize()
-    try_msg(
+    await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -28,7 +28,7 @@ def slashear(update: Update, context: CallbackContext, cmd: Command) -> None:
 
 
 @command(member_exclusive=True)
-def uwuspeech(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def uwuspeech(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Converts a phrase into an uwu-ized version
     """
@@ -46,7 +46,7 @@ def uwuspeech(update: Update, context: CallbackContext, cmd: Command) -> None:
         .replace("P", "PW")
     )
 
-    try_msg(
+    await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -55,14 +55,14 @@ def uwuspeech(update: Update, context: CallbackContext, cmd: Command) -> None:
 
 
 @command(member_exclusive=True)
-def repetir(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def repetir(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Repeats the text of a given message
     """
     log_command(update)
     arg = cmd.get_arg_or_reply()
 
-    try_msg(
+    await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -71,7 +71,7 @@ def repetir(update: Update, context: CallbackContext, cmd: Command) -> None:
 
 
 @command(member_exclusive=True)
-def distancia(update: Update, context: CallbackContext) -> None:
+async def distancia(update: Update, context: CallbackContext) -> None:
     """
     Counts the distance between the current message and the message being replied to
     """
@@ -87,7 +87,7 @@ def distancia(update: Update, context: CallbackContext) -> None:
     answer = str(message_id - reply_id)
     mensaje_s = "mensajes" if answer != "1" else "mensaje"
 
-    try_msg(
+    await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",

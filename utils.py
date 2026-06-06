@@ -2,24 +2,24 @@ import random
 import re
 from string import ascii_lowercase, ascii_uppercase
 
-from telegram import Message, Update, Bot, TelegramError, constants as tg_constants
+from telegram import Message, Update, Bot, constants as tg_constants
+from telegram.error import TelegramError
 from telegram.ext import CallbackContext
 
 import data
 from config.logger import logger
 
 
-def _try_send(
-    bot: Bot, attempts: int, function: callable, error_message: str, **params
-):
+async def _try_send(bot: Bot, attempts: int, function, error_message: str, **params):
     """
     Make multiple attempts to send a message.
     """
     chat_id = params["chat_id"]
+    ret = None
     attempt = 1
     while attempt <= attempts:
         try:
-            ret = function(**params)
+            ret = await function(**params)
         except TelegramError as e:
             logger.error(
                 (
@@ -42,48 +42,47 @@ def _try_send(
     return ret
 
 
-def try_msg(bot: Bot, attempts: int = 2, **params) -> None:
+async def try_msg(bot: Bot, attempts: int = 2, **params) -> None:
     """
     Make multiple attempts to send a text message.
     """
     error_message = "Messaging chat"
-    message = _try_send(bot, attempts, bot.send_message,
-                        error_message, **params)
+    message = await _try_send(bot, attempts, bot.send_message, error_message, **params)
 
 
-def try_edit(bot: Bot, attempts: int = 2, **params) -> None:
+async def try_edit(bot: Bot, attempts: int = 2, **params) -> None:
     """
     Make multiple attempts to edit a message.
     """
     error_message = f"Editing message {params['message_id']} in chat"
-    _try_send(bot, attempts, bot.edit_message_text, error_message, **params)
+    await _try_send(bot, attempts, bot.edit_message_text, error_message, **params)
 
 
-def try_sticker(bot: Bot, attempts: int = 2, **params) -> None:
+async def try_sticker(bot: Bot, attempts: int = 2, **params) -> None:
     """
     Make multiple attempts to send a sticker.
     """
     error_message = "Stickering chat"
-    _try_send(bot, attempts, bot.send_sticker, error_message, **params)
+    await _try_send(bot, attempts, bot.send_sticker, error_message, **params)
 
 
-def try_poll(bot: Bot, attempts: int = 2, **params) -> None:
+async def try_poll(bot: Bot, attempts: int = 2, **params) -> None:
     """
     Make multiple attempts to send a poll.
     """
     error_message = "Sending poll to chat"
-    _try_send(bot, attempts, bot.send_poll, error_message, **params)
+    await _try_send(bot, attempts, bot.send_poll, error_message, **params)
 
 
-def try_delete(bot: Bot, attempts: int = 2, **params) -> None:
+async def try_delete(bot: Bot, attempts: int = 2, **params) -> None:
     """
     Make multiple attempts to delete a message.
     """
     error_message = f"Deleting message {params['message_id']} in chat"
-    _try_send(bot, attempts, bot.delete_message, error_message, **params)
+    await _try_send(bot, attempts, bot.delete_message, error_message, **params)
 
 
-def send_long_message(bot: Bot, **params) -> None:
+async def send_long_message(bot: Bot, **params) -> None:
     """
     Recursively breaks long texts into multiple messages,
     prioritizing newlines for slicing.
@@ -91,7 +90,7 @@ def send_long_message(bot: Bot, **params) -> None:
     text = params.pop("text", "")
 
     params_copy = params.copy()
-    maxl = params.pop("max_length", tg_constants.MAX_MESSAGE_LENGTH)
+    maxl = params.pop("max_length", tg_constants.MessageLimit.MAX_TEXT_LENGTH)
     slice_str = params.pop("slice_str", "\n")
     if len(text) > maxl:
         slice_index = text.rfind(slice_str, 0, maxl)
@@ -99,10 +98,10 @@ def send_long_message(bot: Bot, **params) -> None:
             slice_index = maxl
         sliced_text = text[:slice_index]
         rest_text = text[slice_index + 1:]
-        try_msg(bot, text=sliced_text, **params)
-        send_long_message(bot, text=rest_text, **params_copy)
+        await try_msg(bot, text=sliced_text, **params)
+        await send_long_message(bot, text=rest_text, **params_copy)
     else:
-        try_msg(bot, text=text, **params)
+        await try_msg(bot, text=text, **params)
 
 
 def get_arg(update: Update) -> str:

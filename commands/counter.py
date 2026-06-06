@@ -10,7 +10,7 @@ COUNTER_HASHTAG = "#CONTADOR"
 
 
 @command(member_exclusive=True)
-def contador(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def contador(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Starts an editable counter
     """
@@ -18,14 +18,14 @@ def contador(update: Update, context: CallbackContext, cmd: Command) -> None:
     arg = cmd.get_arg_or_reply().replace("\n", " ")
     message = f"{COUNTER_HASHTAG} {arg}:\n0"
 
-    try_msg(context.bot,
-            chat_id=update.message.chat_id,
-            parse_mode="HTML",
-            text=message)
+    await try_msg(context.bot,
+                  chat_id=update.message.chat_id,
+                  parse_mode="HTML",
+                  text=message)
 
 
 @command(member_exclusive=True)
-def sumar(update: Update, context: CallbackContext, cmd: Command, sign: int = 1) -> None:
+async def sumar(update: Update, context: CallbackContext, cmd: Command, sign: int = 1) -> None:
     """
     Adds a number to a counter (default 1)
     """
@@ -45,7 +45,7 @@ def sumar(update: Update, context: CallbackContext, cmd: Command, sign: int = 1)
 
     new_message = "\n".join([str(item) for item in lines])
 
-    try_edit(
+    await try_edit(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -55,8 +55,8 @@ def sumar(update: Update, context: CallbackContext, cmd: Command, sign: int = 1)
 
 
 @command(member_exclusive=True)
-def restar(update: Update, context: CallbackContext) -> None:
+async def restar(update: Update, context: CallbackContext) -> None:
     """
     Subtracts a number to a counter (default 1)
     """
-    sumar(update, context, -1)
+    await sumar(update, context, -1)

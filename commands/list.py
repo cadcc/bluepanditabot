@@ -10,7 +10,7 @@ LIST_HASHTAG = "#LISTA"
 
 
 @command(member_exclusive=True)
-def lista(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def lista(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Starts an editable list
     """
@@ -18,14 +18,14 @@ def lista(update: Update, context: CallbackContext, cmd: Command) -> None:
     arg = cmd.get_arg_or_reply()
     message = f"{LIST_HASHTAG} {arg}:"
 
-    try_msg(context.bot,
-            chat_id=update.message.chat_id,
-            parse_mode="HTML",
-            text=message)
+    await try_msg(context.bot,
+                  chat_id=update.message.chat_id,
+                  parse_mode="HTML",
+                  text=message)
 
 
 @command(member_exclusive=True)
-def agregar(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def agregar(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Adds an item to a list
     """
@@ -40,7 +40,7 @@ def agregar(update: Update, context: CallbackContext, cmd: Command) -> None:
 
     new_message = content + f"\n{lines_count}- " + addition
 
-    try_edit(
+    await try_edit(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -50,7 +50,7 @@ def agregar(update: Update, context: CallbackContext, cmd: Command) -> None:
 
 
 @command(member_exclusive=True)
-def quitar(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def quitar(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Removes an item from a list
     """
@@ -80,7 +80,7 @@ def quitar(update: Update, context: CallbackContext, cmd: Command) -> None:
 
     new_message = '\n'.join(new_lines)
 
-    try_edit(
+    await try_edit(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -90,7 +90,7 @@ def quitar(update: Update, context: CallbackContext, cmd: Command) -> None:
 
 
 @command(member_exclusive=True)
-def editar(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def editar(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Edits an item from a list
     """
@@ -121,7 +121,7 @@ def editar(update: Update, context: CallbackContext, cmd: Command) -> None:
     if new_message == content:
         return
 
-    try_edit(
+    await try_edit(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",
@@ -131,7 +131,7 @@ def editar(update: Update, context: CallbackContext, cmd: Command) -> None:
 
 
 @command(member_exclusive=True)
-def deslistar(update: Update, context: CallbackContext) -> None:
+async def deslistar(update: Update, context: CallbackContext) -> None:
     """
     Cierra una lista
     """
@@ -141,7 +141,7 @@ def deslistar(update: Update, context: CallbackContext) -> None:
     content = update.message.reply_to_message.text
     new_message = content[1:]
 
-    try_edit(
+    await try_edit(
         context.bot,
         chat_id=update.message.chat_id,
         parse_mode="HTML",

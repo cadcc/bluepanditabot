@@ -9,13 +9,14 @@ from data import persistence
 from commands.decorators import command
 from commands.base import Command
 from config.logger import log_command
-from utils import try_msg, guard_editable_bot_message, try_edit, try_delete
+from utils import try_msg, guard_editable_bot_message, try_edit, try_delete, \
+    guard_reply_to_message, guard_reply_to_bot_message
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
 tag_title = "\U0001F4A1 ATENCIÓN "
 
 @command(member_exclusive=True)
-def new_group(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def new_group(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Creates tag list
     """
@@ -36,14 +37,14 @@ def new_group(update: Update, context: CallbackContext, cmd: Command) -> None:
     else:
         message = "No me mandaste un nombre de grupo..."
 
-    try_msg(context.bot,
-            chat_id=update.message.chat_id,
-            parse_mode="HTML",
-            text=message)
+    await try_msg(context.bot,
+                  chat_id=update.message.chat_id,
+                  parse_mode="HTML",
+                  text=message)
 
 
 @command(member_exclusive=True)
-def group_add(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def group_add(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Adds a tag to a group
     """
@@ -52,10 +53,10 @@ def group_add(update: Update, context: CallbackContext, cmd: Command) -> None:
     tag_groups = context.chat_data.get("tag_groups", {})
     if len(tag_groups) == 0:
         message = "Primero debes crear un grupo para poder agregar"
-        try_msg(context.bot,
-                chat_id=update.message.chat_id,
-                parse_mode="HTML",
-                text=message)
+        await try_msg(context.bot,
+                      chat_id=update.message.chat_id,
+                      parse_mode="HTML",
+                      text=message)
     else:
         keyboard = []
         tags = "%".join(arg)
@@ -73,15 +74,15 @@ def group_add(update: Update, context: CallbackContext, cmd: Command) -> None:
             keyboard.append([InlineKeyboardButton(
                 tg[-1], callback_data="gadd:"+tg[-1]+"%"+tags)])
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(
+        await update.message.reply_text(
             "Seleccione el grupo al cual agregar a \n"+"\n".join(arg), reply_markup=reply_markup)
 
 
-def gadd(update, context):
+async def gadd(update: Update, context: CallbackContext) -> None:
     tag_groups = context.chat_data.get("tag_groups", dict())
 
     query = update.callback_query
-    query.answer()
+    await query.answer()
     answer = query.data.split(":")[1]
     answer = answer.split("%")
     group = answer[0]
@@ -101,29 +102,29 @@ def gadd(update, context):
     if ignored:
         response += "\n\U0001F44D Ya se encontraban en el grupo: \n- " + \
             "\n- ".join(ignored)
-    query.edit_message_text(text=response, parse_mode="HTML")
+    await query.edit_message_text(text=response, parse_mode="HTML")
 
 
-def stag(update: Update, context: CallbackContext) -> None:
+async def stag(update: Update, context: CallbackContext) -> None:
     tag_groups = context.chat_data.get("tag_groups", dict())
 
     query = update.callback_query
-    query.answer()
+    await query.answer()
     arg = query.data.split(":")[1]
 
     response = tag_title + arg + "!!!\n" + " ".join(list(tag_groups[arg]))
     original_message = query.message.reply_to_message
-    try_delete(context.bot, chat_id=query.message.chat_id, message_id=query.message.message_id)
-    try_msg(context.bot,
-            chat_id=query.message.chat_id,
-            parse_mode="HTML",
-            text=response,
-            reply_to_message_id=original_message.message_id if original_message else None)
+    await try_delete(context.bot, chat_id=query.message.chat_id, message_id=query.message.message_id)
+    await try_msg(context.bot,
+                  chat_id=query.message.chat_id,
+                  parse_mode="HTML",
+                  text=response,
+                  reply_to_message_id=original_message.message_id if original_message else None)
     return
 
 
 @command(member_exclusive=True)
-def rename_group(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def rename_group(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Renames a group
     """
@@ -135,7 +136,7 @@ def rename_group(update: Update, context: CallbackContext, cmd: Command) -> None
         keyboard = []
         tg = list(tag_groups.keys())
         if not tg:
-            update.message.reply_text("No hay grupos creados")
+            await update.message.reply_text("No hay grupos creados")
             return
         for i in range(0, len(tg)-1, 2):
             keyboard.append(
@@ -148,7 +149,7 @@ def rename_group(update: Update, context: CallbackContext, cmd: Command) -> None
             keyboard.append([InlineKeyboardButton(
                 tg[-1], callback_data="rg:"+tg[-1])])
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(
+        await update.message.reply_text(
             "Seleccione el grupo al cual renombrar:", reply_markup=reply_markup)
         return
 
@@ -163,14 +164,14 @@ def rename_group(update: Update, context: CallbackContext, cmd: Command) -> None
         data.persistence.flush()
 
         response = "Grupo " + arg[0] + " renombrado a " + arg[1]
-    try_msg(context.bot,
-            chat_id=update.message.chat_id,
-            parse_mode="HTML",
-            text=response)
+    await try_msg(context.bot,
+                  chat_id=update.message.chat_id,
+                  parse_mode="HTML",
+                  text=response)
 
 
 @command(member_exclusive=True)
-def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Tags a group
     """
@@ -182,7 +183,7 @@ def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
         keyboard = []
         tg = list(tag_groups.keys())
         if not tg:
-            update.message.reply_text("No hay grupos creados")
+            await update.message.reply_text("No hay grupos creados")
             return
         for i in range(0, len(tg)-1, 2):
             keyboard.append(
@@ -196,7 +197,7 @@ def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
             keyboard.append([InlineKeyboardButton(
                 tg[-1], callback_data="stag:"+tg[-1])])
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(
+        await update.message.reply_text(
             "Seleccione el grupo al cual taggear:", reply_markup=reply_markup)
         return
 
@@ -204,15 +205,15 @@ def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
         response = "\U0001F44D No existe el grupo" + arg + "!!1!"
     else:
         response = tag_title + arg + "!!!\n" + " ".join(list(tag_groups[arg]))
-    try_msg(context.bot,
-            chat_id=update.message.chat_id,
-            parse_mode="HTML",
-            text=response,
-            reply_to_message_id=update.message.message_id)
+    await try_msg(context.bot,
+                  chat_id=update.message.chat_id,
+                  parse_mode="HTML",
+                  text=response,
+                  reply_to_message_id=update.message.message_id)
 
 
 @command(member_exclusive=True)
-def list_groups(update: Update, context: CallbackContext, cmd: Command) -> None:
+async def list_groups(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Lists tag groups
     """
@@ -228,14 +229,14 @@ def list_groups(update: Update, context: CallbackContext, cmd: Command) -> None:
         for g in tag_groups:
             message += "\n"+str(g)
 
-    try_msg(context.bot,
-            chat_id=update.message.chat_id,
-            parse_mode="HTML",
-            text=message)
+    await try_msg(context.bot,
+                  chat_id=update.message.chat_id,
+                  parse_mode="HTML",
+                  text=message)
 
 
 @command(member_exclusive=True)
-def untag(update: Update, context: CallbackContext) -> None:
+async def untag(update: Update, context: CallbackContext) -> None:
     """
     Deletes the message being replied to if it was a bot tag
     """
@@ -250,5 +251,5 @@ def untag(update: Update, context: CallbackContext) -> None:
     if tag_title not in update.message.text:
         return
 
-    try_delete(context.bot, chat_id=update.message.chat_id,
-               message_id=update.message.reply_to_message.message_id)
+    await try_delete(context.bot, chat_id=update.message.chat_id,
+                     message_id=update.message.reply_to_message.message_id)

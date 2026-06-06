@@ -11,23 +11,23 @@ from utils import try_delete, guard_reply_to_message, \
 
 
 @member_exclusive
-def get_log(update: Update, context: CallbackContext) -> None:
+async def get_log(update: Update, context: CallbackContext) -> None:
     """
     Gets the bot's command log
     """
     log_command(update)
-    context.bot.send_document(chat_id=update.message.from_user.id,
-                              document=open(os.path.relpath(
-                                  'bot.log'), 'rb'),
-                              filename=(
-                                  "bluepanditabot_log_"
-                                  f"{datetime.now().strftime('%d%b%Y-%H%M%S')}"
-                                  ".txt"
-                              ))
+    await context.bot.send_document(chat_id=update.message.from_user.id,
+                                    document=open(os.path.relpath(
+                                        'bot.log'), 'rb'),
+                                    filename=(
+                                        "bluepanditabot_log_"
+                                        f"{datetime.now().strftime('%d%b%Y-%H%M%S')}"
+                                        ".txt"
+                                    ))
 
 
 @member_exclusive
-def prohibir(update: Update, context: CallbackContext) -> None:
+async def prohibir(update: Update, context: CallbackContext) -> None:
     """
     Deletes the message being replied to if it was sent by the bot
     """
@@ -39,5 +39,5 @@ def prohibir(update: Update, context: CallbackContext) -> None:
     if guard_reply_to_bot_message(update, context):
         return
 
-    try_delete(context.bot, chat_id=update.message.chat_id,
-               message_id=update.message.reply_to_message.message_id)
+    await try_delete(context.bot, chat_id=update.message.chat_id,
+                     message_id=update.message.reply_to_message.message_id)
