@@ -15,6 +15,7 @@ async def start(update: Update, context: CallbackContext) -> None:
     message = "ola ceamos hamigos"
     await try_msg(context.bot,
                   chat_id=update.message.chat_id,
+                  message_thread_id=update.message.message_thread_id,
                   parse_mode="HTML",
                   text=message)
 
@@ -28,6 +29,7 @@ async def tup(update: Update, context: CallbackContext) -> None:
     message = "tup"
     await try_msg(context.bot,
                   chat_id=update.message.chat_id,
+                  message_thread_id=update.message.message_thread_id,
                   parse_mode="HTML",
                   text=message)
 
@@ -41,6 +43,7 @@ async def gracias(update: Update, context: CallbackContext) -> None:
 
     await try_sticker(context.bot,
                       chat_id=update.message.chat_id,
+                      message_thread_id=update.message.message_thread_id,
                       sticker="CAACAgEAAxkBAAEIGOFkDPttpRc6CvU2knm"
                               "-GXAwP8inxgAC3AEAAqnzSUfg84mzRL-JRS8E")
 
@@ -55,6 +58,7 @@ async def weekly_poll(update: Update, context: CallbackContext) -> None:
 
     await try_poll(context.bot,
                    chat_id=update.message.chat_id,
+                   message_thread_id=update.message.message_thread_id,
                    question="Esta semana voy a la U los días",
                    options=["Lunes", "Martes", "Miércoles",
                              "Jueves", "Viernes", "Sábado",

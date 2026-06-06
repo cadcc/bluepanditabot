@@ -39,6 +39,7 @@ async def new_group(update: Update, context: CallbackContext, cmd: Command) -> N
 
     await try_msg(context.bot,
                   chat_id=update.message.chat_id,
+                  message_thread_id=update.message.message_thread_id,
                   parse_mode="HTML",
                   text=message)
 
@@ -55,6 +56,7 @@ async def group_add(update: Update, context: CallbackContext, cmd: Command) -> N
         message = "Primero debes crear un grupo para poder agregar"
         await try_msg(context.bot,
                       chat_id=update.message.chat_id,
+                      message_thread_id=update.message.message_thread_id,
                       parse_mode="HTML",
                       text=message)
     else:
@@ -117,6 +119,7 @@ async def stag(update: Update, context: CallbackContext) -> None:
     await try_delete(context.bot, chat_id=query.message.chat_id, message_id=query.message.message_id)
     await try_msg(context.bot,
                   chat_id=query.message.chat_id,
+                  message_thread_id=query.message.message_thread_id,
                   parse_mode="HTML",
                   text=response,
                   reply_to_message_id=original_message.message_id if original_message else None)
@@ -166,6 +169,7 @@ async def rename_group(update: Update, context: CallbackContext, cmd: Command) -
         response = "Grupo " + arg[0] + " renombrado a " + arg[1]
     await try_msg(context.bot,
                   chat_id=update.message.chat_id,
+                  message_thread_id=update.message.message_thread_id,
                   parse_mode="HTML",
                   text=response)
 
@@ -231,6 +235,7 @@ async def list_groups(update: Update, context: CallbackContext, cmd: Command) ->
 
     await try_msg(context.bot,
                   chat_id=update.message.chat_id,
+                  message_thread_id=update.message.message_thread_id,
                   parse_mode="HTML",
                   text=message)
 

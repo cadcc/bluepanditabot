@@ -20,6 +20,7 @@ async def contador(update: Update, context: CallbackContext, cmd: Command) -> No
 
     await try_msg(context.bot,
                   chat_id=update.message.chat_id,
+                  message_thread_id=update.message.message_thread_id,
                   parse_mode="HTML",
                   text=message)
 

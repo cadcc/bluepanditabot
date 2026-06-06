@@ -24,6 +24,7 @@ async def slashear(update: Update, context: CallbackContext, cmd: Command) -> No
     await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
+        message_thread_id=update.message.message_thread_id,
         parse_mode="HTML",
         text=response,
     )
@@ -51,6 +52,7 @@ async def uwuspeech(update: Update, context: CallbackContext, cmd: Command) -> N
     await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
+        message_thread_id=update.message.message_thread_id,
         parse_mode="HTML",
         text=message,
     )
@@ -67,6 +69,7 @@ async def repetir(update: Update, context: CallbackContext, cmd: Command) -> Non
     await try_msg(
         context.bot,
         chat_id=update.message.chat_id,
+        message_thread_id=update.message.message_thread_id,
         parse_mode="HTML",
         text=arg,
     )
