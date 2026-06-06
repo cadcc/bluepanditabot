@@ -36,6 +36,8 @@ async def agregar(update: Update, context: CallbackContext, cmd: Command) -> Non
     lines = content.split("\n")
     lines_count = len(lines)
 
+    if not cmd.arg:
+        return
     addition = cmd.arg.replace("\n", " ")
 
     new_message = content + f"\n{lines_count}- " + addition
@@ -59,6 +61,8 @@ async def quitar(update: Update, context: CallbackContext, cmd: Command) -> None
 
     content = update.message.reply_to_message.text
 
+    if not cmd.arg:
+        return
     number = int(cmd.arg)
     number_dash = str(number) + "-"
 
@@ -100,6 +104,8 @@ async def editar(update: Update, context: CallbackContext, cmd: Command) -> None
 
     content = update.message.reply_to_message.text
     args = cmd.arg
+    if not args:
+        return
 
     try:
         number = int(args[:args.find(" ")])
@@ -111,7 +117,7 @@ async def editar(update: Update, context: CallbackContext, cmd: Command) -> None
 
     if number == 0:
         lines[0] = f"{LIST_HASHTAG} {new_content}:"
-    elif number in range(1, len(lines) + 1):
+    elif number in range(1, len(lines)):
         lines[number] = f"{number}- {new_content}"
     else:
         return

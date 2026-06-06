@@ -14,6 +14,8 @@ async def slashear(update: Update, context: CallbackContext, cmd: Command) -> No
     """
     log_command(update)
     arg = cmd.get_arg_or_reply()
+    if not arg:
+        return
 
     words = arg.split()
     response = "/" + words[0].lower()

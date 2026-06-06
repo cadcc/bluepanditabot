@@ -132,7 +132,7 @@ async def rename_group(update: Update, context: CallbackContext, cmd: Command) -
     arg = cmd.get_arg_or_reply()
     tag_groups = context.chat_data.get("tag_groups", dict())
 
-    if arg == None:
+    if not arg:
         keyboard = []
         tg = list(tag_groups.keys())
         if not tg:
@@ -248,7 +248,7 @@ async def untag(update: Update, context: CallbackContext) -> None:
     if guard_reply_to_bot_message(update, context):
         return
 
-    if tag_title not in update.message.text:
+    if tag_title not in update.message.reply_to_message.text:
         return
 
     await try_delete(context.bot, chat_id=update.message.chat_id,
