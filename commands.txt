@@ -17,6 +17,7 @@ cerrar - Cierra una lista
 
 new_group - Crea un grupo de tags
 group_add - Agrega un tag a un grupo
+group_rm - Quita un tag de un grupo
 rename_group - Renombra un grupo de tags
 list_groups - Lista todos los grupos de tags
 tag - Tagea a todos los miembros de un grupo

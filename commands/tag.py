@@ -107,6 +107,69 @@ async def gadd(update: Update, context: CallbackContext) -> None:
     await query.edit_message_text(text=response, parse_mode="HTML")
 
 
+@command(member_exclusive=True)
+async def group_rm(update: Update, context: CallbackContext, cmd: Command) -> None:
+    """
+    Removes a tag from a group
+    """
+    arg = cmd.get_arg_or_reply()
+    arg = arg.split(" ")
+    tag_groups = context.chat_data.get("tag_groups", {})
+    if len(tag_groups) == 0:
+        message = "Primero debes crear un grupo para poder quitar"
+        await try_msg(context.bot,
+                      chat_id=update.message.chat_id,
+                      message_thread_id=update.message.message_thread_id,
+                      parse_mode="HTML",
+                      text=message)
+    else:
+        keyboard = []
+        tags = "%".join(arg)
+        tg = list(tag_groups.keys())
+        for i in range(0, len(tg)-1, 2):
+            keyboard.append(
+                [
+                    InlineKeyboardButton(
+                        tg[i], callback_data="grm:"+tg[i]+"%"+tags),
+                    InlineKeyboardButton(
+                        tg[i+1], callback_data="grm:"+tg[i+1]+"%"+tags),
+                ]
+            )
+        if len(tg) % 2:
+            keyboard.append([InlineKeyboardButton(
+                tg[-1], callback_data="grm:"+tg[-1]+"%"+tags)])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(
+            "Seleccione el grupo del cual quitar a \n"+"\n".join(arg), reply_markup=reply_markup)
+
+
+async def grm(update: Update, context: CallbackContext) -> None:
+    tag_groups = context.chat_data.get("tag_groups", dict())
+
+    query = update.callback_query
+    await query.answer()
+    answer = query.data.split(":")[1]
+    answer = answer.split("%")
+    group = answer[0]
+    nametags = answer[1:]
+    removed = []
+    ignored = []
+    for nametag in nametags:
+        if nametag in tag_groups[group]:
+            tag_groups[group].discard(nametag)
+            data.persistence.flush()
+            removed.append(nametag)
+        else:
+            ignored.append(nametag)
+    response = "En el grupo " + group + "...\n"
+    if removed:
+        response += "\n\U0001F44B Ya no taggeare a \n- "+"\n- ".join(removed)
+    if ignored:
+        response += "\n\U0001F937 No se encontraban en el grupo: \n- " + \
+            "\n- ".join(ignored)
+    await query.edit_message_text(text=response, parse_mode="HTML")
+
+
 async def stag(update: Update, context: CallbackContext) -> None:
     tag_groups = context.chat_data.get("tag_groups", dict())
 

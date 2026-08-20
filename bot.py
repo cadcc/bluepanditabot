@@ -10,7 +10,7 @@ from commands.counter import contador, sumar, restar
 from commands.list import lista, agregar, quitar, editar, deslistar
 from commands.text import slashear, uwuspeech, repetir, distancia
 from commands.response import start, tup, gracias, weekly_poll, reply_hello
-from commands.tag import group_add, new_group, gadd, tag, list_groups, untag, stag, rename_group
+from commands.tag import group_add, group_rm, new_group, gadd, grm, tag, list_groups, untag, stag, rename_group
 
 
 def main():
@@ -42,6 +42,8 @@ def main():
     # Tag
     application.add_handler(CallbackQueryHandler(gadd, pattern='gadd:.*'))
     application.add_handler(CommandHandler("group_add", group_add))
+    application.add_handler(CallbackQueryHandler(grm, pattern='grm:.*'))
+    application.add_handler(CommandHandler("group_rm", group_rm))
     application.add_handler(CommandHandler("new_group", new_group))
     application.add_handler(CommandHandler("tag", tag))
     application.add_handler(CommandHandler("list_groups", list_groups))
