@@ -3,7 +3,6 @@ from telegram.ext import CallbackContext
 
 from commands.decorators import command
 from commands.base import Command
-from config.logger import log_command
 from utils import try_msg
 
 
@@ -12,7 +11,6 @@ async def slashear(update: Update, context: CallbackContext, cmd: Command) -> No
     """
     Converts a phrase into a slash-ized version
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
     if not arg:
         return
@@ -35,7 +33,6 @@ async def uwuspeech(update: Update, context: CallbackContext, cmd: Command) -> N
     """
     Converts a phrase into an uwu-ized version
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
 
     message = (
@@ -63,7 +60,6 @@ async def repetir(update: Update, context: CallbackContext, cmd: Command) -> Non
     """
     Repeats the text of a given message
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
 
     await try_msg(
@@ -80,7 +76,6 @@ async def distancia(update: Update, context: CallbackContext) -> None:
     """
     Counts the distance between the current message and the message being replied to
     """
-    log_command(update)
 
     message_id = update.message.message_id
 

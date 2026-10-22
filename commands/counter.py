@@ -3,7 +3,6 @@ from telegram.ext import CallbackContext
 
 from commands.base import Command
 from commands.decorators import command
-from config.logger import log_command
 from utils import get_arg, try_msg, guard_editable_bot_message, try_edit
 
 COUNTER_HASHTAG = "#CONTADOR"
@@ -14,7 +13,6 @@ async def contador(update: Update, context: CallbackContext, cmd: Command) -> No
     """
     Starts an editable counter
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply().replace("\n", " ")
     message = f"{COUNTER_HASHTAG} {arg}:\n0"
 

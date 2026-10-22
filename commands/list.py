@@ -3,7 +3,6 @@ from telegram.ext import CallbackContext
 
 from commands.decorators import command
 from commands.base import Command
-from config.logger import log_command
 from utils import try_msg, guard_editable_bot_message, try_edit
 
 LIST_HASHTAG = "#LISTA"
@@ -14,7 +13,6 @@ async def lista(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Starts an editable list
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
     message = f"{LIST_HASHTAG} {arg}:"
 
@@ -99,7 +97,6 @@ async def editar(update: Update, context: CallbackContext, cmd: Command) -> None
     """
     Edits an item from a list
     """
-    log_command(update)
     if guard_editable_bot_message(update, context, LIST_HASHTAG):
         return
 

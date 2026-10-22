@@ -8,7 +8,6 @@ import data
 from data import persistence
 from commands.decorators import command
 from commands.base import Command
-from config.logger import log_command
 from utils import try_msg, guard_editable_bot_message, try_edit, try_delete, \
     guard_reply_to_message, guard_reply_to_bot_message
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -20,7 +19,6 @@ async def new_group(update: Update, context: CallbackContext, cmd: Command) -> N
     """
     Creates tag list
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
     if "%" in arg or ":" in arg:
         message = "Un grupo no puede llevar el caracter '%' o ':' en el nombre"
@@ -194,7 +192,6 @@ async def rename_group(update: Update, context: CallbackContext, cmd: Command) -
     """
     Renames a group
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
     tag_groups = context.chat_data.get("tag_groups", dict())
 
@@ -242,7 +239,6 @@ async def tag(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
     Tags a group
     """
-    log_command(update)
     arg = cmd.get_arg_or_reply()
     tag_groups = context.chat_data.get("tag_groups", dict())
 
@@ -284,7 +280,6 @@ async def list_groups(update: Update, context: CallbackContext, cmd: Command) ->
     """
     Lists tag groups
     """
-    log_command(update)
     if "tag_groups" not in context.chat_data:
         context.chat_data["tag_groups"] = {}
     tag_groups = context.chat_data.get("tag_groups", {})
@@ -308,7 +303,6 @@ async def untag(update: Update, context: CallbackContext) -> None:
     """
     Deletes the message being replied to if it was a bot tag
     """
-    log_command(update)
 
     if guard_reply_to_message(update):
         return
