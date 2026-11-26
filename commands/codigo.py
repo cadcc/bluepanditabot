@@ -1,6 +1,6 @@
 import html
 import re
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import httpx
 from telegram import Update
@@ -43,28 +43,54 @@ def parse_rut(text: str) -> Optional[Tuple[int, str]]:
     return body, match.group("dv").upper()
 
 
-async def fetch_carreras_alumnos(rut_body: int) -> List[dict]:
+async def mufasa_get(client: httpx.AsyncClient, endpoint: str, params) -> List[dict]:
+    """GET a MUFASA endpoint and return its JSON list."""
+    response = await client.get(
+        mufasa.base_url.rstrip("/") + "/" + endpoint,
+        params=params,
+        headers={
+            "Authorization": f"Bearer {mufasa.token}",
+            "Accept": "application/json",
+        },
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+async def fetch_carreras_of_rut(rut_body: int) -> List[Tuple[str, str]]:
     """
-    Query MUFASA's /carreras_alumnos. MUFASA expects the RUT without its DV.
+    Return the (nombre, estado_texto) of each carrera a RUT is or was enrolled
+    in. If a carrera appears more than once, only its last appearance is kept
+    (at the position of that last appearance).
+
+    /carreras_alumnos only gives id_carrera, so the nombre is looked up in
+    /carreras. MUFASA expects the RUT without its DV.
     """
-    url = mufasa.base_url.rstrip("/") + "/carreras_alumnos"
     async with httpx.AsyncClient(timeout=30) as client:
-        response = await client.get(
-            url,
-            params={"rut": str(rut_body)},
-            headers={
-                "Authorization": f"Bearer {mufasa.token}",
-                "Accept": "application/json",
-            },
-        )
-        response.raise_for_status()
-        return response.json()
+        alumno = await mufasa_get(client, "carreras_alumnos", {"rut": str(rut_body)})
+        last_estado: Dict[str, str] = {}
+        for c in alumno:
+            id_carrera = str(c.get("id_carrera"))
+            last_estado.pop(id_carrera, None)  # move to its last position
+            last_estado[id_carrera] = c.get("estado_texto") or "?"
+        if not last_estado:
+            return []
+
+        carreras = await mufasa_get(client, "carreras", {"id_carrera[]": list(last_estado)})
+
+    nombres: Dict[str, str] = {
+        str(c.get("id_carrera")): c.get("nombre") for c in carreras if c.get("nombre")
+    }
+    return [
+        (nombres.get(id_carrera, f"Carrera desconocida (id {id_carrera})"), estado)
+        for id_carrera, estado in last_estado.items()
+    ]
 
 
 @command(member_exclusive=True)
 async def codigo(update: Update, context: CallbackContext, cmd: Command) -> None:
     """
-    Looks up a RUT in MUFASA and replies with its carrera codes and estados
+    Looks up a RUT in MUFASA and replies with its carreras' nombre and estado
     """
 
     async def reply(text: str) -> None:
@@ -102,7 +128,7 @@ async def codigo(update: Update, context: CallbackContext, cmd: Command) -> None
         return
 
     try:
-        carreras = await fetch_carreras_alumnos(body)
+        carreras = await fetch_carreras_of_rut(body)
     except httpx.HTTPStatusError as e:
         logger.error(f"/codigo: MUFASA responded HTTP {e.response.status_code}")
         await reply(f"MUFASA respondió con error HTTP {e.response.status_code}.")
@@ -112,19 +138,12 @@ async def codigo(update: Update, context: CallbackContext, cmd: Command) -> None
         await reply("No se pudo consultar MUFASA.")
         return
 
-    # MUFASA may return the same (carrera, estado) more than once.
-    entries = list(
-        dict.fromkeys(
-            (c.get("id_carrera"), c.get("estado_texto") or "?") for c in carreras
-        )
-    )
-
     rut_display = f"{body}-{dv}"
-    if not entries:
+    if not carreras:
         await reply(f"No se encontraron carreras para <code>{rut_display}</code>.")
         return
 
     lines = [f"Carreras de <code>{rut_display}</code>:"]
-    for id_carrera, estado in entries:
-        lines.append(f"• <code>{id_carrera}</code>: {html.escape(str(estado))}")
+    for nombre, estado in carreras:
+        lines.append(f"• {html.escape(str(nombre))}: {html.escape(str(estado))}")
     await reply("\n".join(lines))
