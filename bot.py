@@ -6,6 +6,7 @@ from core import application
 from config.auth import admin_ids, group_id, debug
 
 from commands.admin import get_log, prohibir
+from commands.codigo import codigo
 from commands.counter import contador, sumar, restar
 from commands.list import lista, agregar, quitar, editar, deslistar
 from commands.text import slashear, uwuspeech, repetir, distancia
@@ -50,6 +51,9 @@ def main():
     application.add_handler(CommandHandler("untag", untag))
     application.add_handler(CallbackQueryHandler(stag, pattern='stag:.*'))
     application.add_handler(CommandHandler("rename_group", rename_group))
+
+    # MUFASA
+    application.add_handler(CommandHandler("codigo", codigo))
 
     application.run_polling()
 

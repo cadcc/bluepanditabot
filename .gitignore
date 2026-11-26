@@ -6,6 +6,7 @@ venv/
 
 # Telegram bot
 /config/auth.py
+.env
 db
 
 # Logs

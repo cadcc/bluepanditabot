@@ -27,3 +27,5 @@ slashear - Convierte una frase en formato camelCase con slash
 uwuspeech - Convierte una frase al estilo uwu
 repetir - Repite el texto de un mensaje
 distancia - Cuenta la distancia en mensajes entre dos mensajes
+
+codigo - Consulta los códigos de carrera de un RUT (ej. 12.345.678-5)
